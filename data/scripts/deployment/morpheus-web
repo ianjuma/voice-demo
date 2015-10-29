@@ -1,0 +1,12 @@
+cd /opt/domains/morpheus/morpheus-web/bin/YYYYMMDD
+scp -P 9671 hydra@10.181.195.204:/opt/domains/morpheus/morpheus-web/target/scala-2.10/morpheus-web-assembly-0.1.0.jar morpheus-web-assembly.jar
+cd /opt/domains/morpheus/morpheus-web/bin
+ln -sf 20140815/morpheus-web-assembly.jar current
+
+cd /opt/domains/morpheus/morpheus-web/config
+scp -P 9671 hydra@10.181.195.204:/opt/domains/morpheus/data/config/application.conf .
+scp -P 9671 hydra@10.181.195.204:/opt/domains/morpheus/data/config/web-logback.xml logback.xml
+
+
+
+

@@ -1,0 +1,10 @@
+cd /opt/domains/morpheus/morpheus-crunch/bin/YYYYMMDD
+scp -P 9671 hydra@10.181.195.204:/opt/domains/morpheus/morpheus-crunch/target/scala-2.10/morpheus-crunch-assembly-0.1.0.jar morpheus-crunch-assembly.jar
+cd /opt/domains/morpheus/morpheus-crunch/bin
+ln -sf 20140815/morpheus-crunch-assembly.jar current
+
+cd /opt/domains/morpheus/morpheus-crunch/config
+scp -P 9671 hydra@10.181.195.204:/opt/domains/morpheus/data/config/application.conf .
+scp -P 9671 hydra@10.181.195.204:/opt/domains/morpheus/data/config/crunch-logback.xml logback.xml
+
+

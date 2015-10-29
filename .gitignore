@@ -1,0 +1,17 @@
+# Temp files
+*~
+
+# Compile results
+target/**
+project/project/**
+project/target/**
+*pyc
+
+cowbell-core/target/**
+cowbell-voice/target/*
+cowbell-web/target/*
+cowbell-crunch/target/*
+
+# Rando's
+todo
+.idea

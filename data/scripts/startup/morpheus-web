@@ -1,0 +1,87 @@
+#!/bin/sh
+
+#! /bin/sh
+#
+# morpheus-web: Scala Based Jaza Morpheus Engine Implementation
+#
+# chkconfig: - 90 10
+# description: morpheus web
+# processname: morpheus-web
+# pidfile: /var/run/morpheus/morpheus-web.pid
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if [ -z "${JAVA_HOME}" ]; then
+        JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
+fi
+
+JAVA_OPTS="-Xms512m -Xmx1024m"
+
+APP=morpheus-web
+
+PID=/var/run/${APP}.pid
+OUT_LOG=/var/log/${APP}/${APP}_out.log
+ERR_LOG=/var/log/${APP}/${APP}_err.log
+
+DAEMON_USER=morpheus
+
+APP_BASE_PATH=/opt/domains/morpheus/morpheus-web
+APP_LOG_CONFIG=${APP_BASE_PATH}/config/logback.xml
+APP_CONFIG=${APP_BASE_PATH}/config/application.conf
+APP_CLASSPATH=${APP_BASE_PATH}/bin/current
+
+DAEMON_CLASSPATH=/opt/resources/utils/commons-daemon-1.0.15/commons-daemon-1.0.15.jar
+APP_CLASS=com.jaza.morpheus.web.services.ApplicationDaemon
+
+if [ -n "$APP_LOG_CONFIG}" ]; then
+    JAVA_OPTS="-Dlogback.configurationFile=${APP_LOG_CONFIG} ${JAVA_OPTS}"
+fi
+
+DAEMON_ARGS="-home ${JAVA_HOME} -Dconfig.file=${APP_CONFIG} ${JAVA_OPTS} -pidfile ${PID} -user ${DAEMON_USER} -outfile ${OUT_LOG} -errfile ${ERR_LOG} -cp ${APP_CLASSPATH}:${DAEMON_CLASSPATH} ${APP_CLASS}"
+
+JSVC=/opt/resources/utils/commons-daemon-1.0.15-src/src/native/unix/jsvc
+
+case "$1" in
+  start)
+        echo -n "Starting ${APP}:"
+        ${JSVC} ${DAEMON_ARGS}
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]
+        then
+                echo_success
+                touch /var/lock/subsys/morpheus-queues
+        else
+                echo_failure
+        fi
+        echo
+        ;;
+  stop)
+        echo -n "Stopping ${APP}:"
+        ${JSVC} -stop ${DAEMON_ARGS}
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]
+        then
+                echo_success
+                rm -f /var/lock/subsys/morpheus-queues
+        else
+                echo_failure
+        fi
+        echo
+        ;;
+  status)
+        status $APP
+        RETVAL=$?
+        ;;
+  restart|reload)
+        $0 stop
+        $0 start
+        RETVAL=$?
+        ;;
+  *)
+        echo "Usage: ${APP} {start|stop|status|restart}"
+        exit 1
+esac
+
+exit $RETVAL
+
