@@ -4,6 +4,8 @@ package services
 import akka.actor.Props
 import akka.pattern.ask
 import akka.util.Timeout
+import com.support.voice.web.services.HandleCall.handleCall
+import com.support.voice.web.services.ProcessDtmfService.ResponseString
 import org.json4s._
 import spray.can.Http
 import spray.can.server.Stats
@@ -32,7 +34,6 @@ case class VoiceResponse( response: String, errorMessage: Option[String])
 trait VoiceService extends HttpService {
 
   import Json4sProtocol._
-  import SupportActor._
 
   // These implicit values allow us to use futures in this trait.
   implicit def executionContext = actorRefFactory.dispatcher
@@ -40,7 +41,7 @@ trait VoiceService extends HttpService {
   implicit val timeout = Timeout(5 seconds)
 
   //Our worker Actor handles the work of the request.
-  val processCallbackService = actorRefFactory.actorOf(Props[SupportActor], "process-callback-service")
+  val processCallbackService = actorRefFactory.actorOf(Props[HandleCallActor], "process-callback-service")
   val processDtmfService = actorRefFactory.actorOf(Props[ProcessDtmfActor], "process-dtmf-callback")
 
   val supportServiceRoute: Route =
