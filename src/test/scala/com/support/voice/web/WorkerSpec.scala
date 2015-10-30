@@ -21,7 +21,7 @@ class WorkerSpec extends TestKit(ActorSystem("WorkerSpec"))
   "Worker" - {
     "creates" - {
       "receive Ok" - {
-        val future = actorRef ! Create(new Foo("bar"))
+        val future = actorRef ! Create(new VoiceCallbackParams("bar"))
         expectMsgClass(classOf[Ok])
       }
     }

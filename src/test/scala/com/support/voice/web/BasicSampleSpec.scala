@@ -21,7 +21,7 @@ class BasicSampleSpec extends FreeSpec with Matchers with ScalatestRouteTest wit
           // Check content type
           contentType.toString should include("application/json")
           // Try serializaing as a List of Foo
-          val response = responseAs[List[Foo]]
+          val response = responseAs[List[String]]
 
           response.size should equal(2)
           response(0).bar should equal("foo1")
