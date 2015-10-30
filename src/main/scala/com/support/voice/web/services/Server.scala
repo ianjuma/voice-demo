@@ -17,6 +17,9 @@ object Json4sProtocol extends Json4sSupport {
   implicit def json4sFormats: Formats = DefaultFormats
 }
 
+case class DtmfCallbackParams(isActive: String, sessionId: String,
+                               callerNumber: String, destinationNumber: String, dtmfDigits: Int)
+
 /* Our case class, used for request and responses */
 case class VoiceQuery(voice: String)
 case class VoiceCallbackParams(isActive: String, sessionId: String,
@@ -37,7 +40,8 @@ trait VoiceService extends HttpService {
   implicit val timeout = Timeout(5 seconds)
 
   //Our worker Actor handles the work of the request.
-  val worker = actorRefFactory.actorOf(Props[SupportActor], "support-service-actor")
+  val processCallbackService = actorRefFactory.actorOf(Props[SupportActor], "process-callback-service")
+  val processDtmfService = actorRefFactory.actorOf(Props[ProcessDtmfActor], "process-dtmf-callback")
 
   val supportServiceRoute: Route =
     pathSingleSlash {
@@ -57,7 +61,7 @@ trait VoiceService extends HttpService {
                 destinationNumber = request.destinationNumber
               )
 
-              (worker ? serviceRequest).mapTo[VoiceResponse] map { result =>
+              (processCallbackService ? serviceRequest).mapTo[VoiceResponse] map { result =>
                 result
               }
               /*respondWithStatus(Created) {
@@ -88,13 +92,33 @@ trait VoiceService extends HttpService {
             }
           }
       }
+      path("voice" / "callback" / "processDtmf") {
+        post {
+          formFields('isActive.as[String], 'sessionId.as[String], 'callerNumber.as[String],
+            'destinationNumber.as[String], 'dtmfDigits.as[Int]).as(DtmfCallbackParams) { request =>
+            complete {
+              val serviceRequest = DtmfCallbackParams(
+                isActive = request.isActive,
+                sessionId = request.sessionId,
+                callerNumber = request.callerNumber,
+                destinationNumber = request.destinationNumber,
+                dtmfDigits = request.dtmfDigits
+              )
+
+              (processDtmfService ? serviceRequest).mapTo[VoiceResponse] map { result =>
+                result
+              }
+            }
+          }
+        }
+      }
 
     def processCallback[T](query: VoiceCallbackParams) = {
       // We use the Ask pattern to return
       // a future from our worker Actor,
       // which then gets passed to the complete
       // directive to finish the request.
-      val response = (worker ? Create(query))
+      val response = (processCallbackService ? handleCall(query))
         .mapTo[ResponseString]
         .map(result => result)
         .recover { case _ => "error" }

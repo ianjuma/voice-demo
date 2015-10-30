@@ -9,7 +9,7 @@ object Boot extends App {
   implicit val system = ActorSystem("voice-support-system")
 
   /* Use Akka to create our Spray Service */
-  val service = system.actorOf(Props[SupportActor], "voice-support-service")
+  val service = system.actorOf(Props[WebServiceActor], "voice-support-service")
 
   /* and bind to Akka's I/O interface */
   IO(Http) ! Http.Bind(
@@ -24,9 +24,8 @@ object Boot extends App {
   system.shutdown()
 }
 
-
 /* Our Server Actor is pretty lightweight; simply mixing in our route trait and logging */
-class SupportActor extends Actor with VoiceService with ActorLogging {
+class WebServiceActor extends Actor with VoiceService with ActorLogging {
   def actorRefFactory = context
   def receive = runRoute(supportServiceRoute)
 }
