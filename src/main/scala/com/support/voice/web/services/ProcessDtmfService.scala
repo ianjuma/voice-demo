@@ -14,7 +14,7 @@ class ProcessDtmfActor extends Actor with ActorLogging {
 
   def receive = {
     case getDtmf(query) => {
-      log.info(s"Create ${query}")
+      log.info(s"Create $query")
 
       // Compose the response
       val response = "<?xml version='1.0' encoding='UTF-8'?>;"
